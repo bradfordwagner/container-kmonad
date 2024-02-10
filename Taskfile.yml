@@ -1,0 +1,47 @@
+---
+version: '3'
+
+env:
+  VAULT_ADDR: http://bradfordwagner.com:8200
+
+tasks:
+  docker_login:
+    internal: true
+    cmds:
+      - |
+        docker_login=$(vault read secret/data/quay | jq -r '.data.data.docker_login')
+        eval ${docker_login}
+  copy_latest_binary:
+    cmds:
+      - |
+        docker run --rm -it -v ${PWD}:/host/ quay.io/bradfordwagner/kmonad sh -c 'cp -vp /root/kmonad /host/'
+        cp kmonad ~/bin/
+  install_dext:
+    cmds:
+      - |
+        cd /tmp
+        git clone --recursive https://github.com/kmonad/kmonad.git
+        cd kmonad
+        open c_src/mac/Karabiner-DriverKit-VirtualHIDDevice/dist/Karabiner-DriverKit-VirtualHIDDevice-3.1.0.pkg
+  dext_activate:
+    cmds:
+      - /Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager activate
+  build_local:
+    cmds:
+      - |
+        cd /tmp
+        git clone --recursive https://github.com/kmonad/kmonad.git
+        cd kmonad
+        stack build --flag kmonad:dext --extra-include-dirs=c_src/mac/Karabiner-DriverKit-VirtualHIDDevice/include/pqrs/karabiner/driverkit:c_src/mac/Karabiner-DriverKit-VirtualHIDDevice/src/Client/vendor/include
+  docker:
+    cmds:
+      - task: docker_login
+      - |
+        tag=$(date +%Y-%m-%d)
+        image=quay.io/bradfordwagner/kmonad:${tag}
+        latest=quay.io/bradfordwagner/kmonad:latest
+        docker build -t ${image} .
+        docker build -t ${latest} .
+        docker push ${image}
+        docker push ${latest}
+    silent: true
