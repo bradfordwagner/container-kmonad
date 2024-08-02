@@ -20,13 +20,8 @@ tasks:
         eval ${docker_login}
   copy_latest_binary:
     cmds:
-      - task: clone
       - |
-        cd /tmp
-        docker run --rm -it -v ${PWD}:/host/ quay.io/bradfordwagner/kmonad sh -c 'cp -vp /root/kmonad /host/'
-        cp kmonad ~/bin/
-  install_dext:
-    cmds:
+        docker run --rm -it -v ~/bin:/host/ quay.io/bradfordwagner/kmonad sh -c 'cp -v /root/kmonad /host/'
       - task: clone
       - |
         cd /tmp/kmonad
