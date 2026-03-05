@@ -9,7 +9,7 @@ tasks:
     internal: true
     cmds:
       - cmd: |
-          cd /tmp
+          cd ~/tmp
           git clone --recursive https://github.com/kmonad/kmonad.git
         ignore_error: true
   docker_login:
@@ -23,8 +23,12 @@ tasks:
       - |
         docker run --rm -it -v ~/bin:/host/ quay.io/bradfordwagner/kmonad sh -c 'cp -v /root/kmonad /host/'
       - task: clone
+      - task: install_karabiner
+  install_karabiner:
+    cmds:
+      - task: clone
       - |
-        cd /tmp/kmonad
+        cd ~/tmp/kmonad
         open c_src/mac/Karabiner-DriverKit-VirtualHIDDevice/dist/Karabiner-DriverKit-VirtualHIDDevice-3.1.0.pkg
   dext_activate:
     cmds:
@@ -33,7 +37,7 @@ tasks:
     cmds:
       - task: clone
       - |
-        cd /tmp/kmonad
+        cd ~/tmp/kmonad
         stack build --flag kmonad:dext --extra-include-dirs=c_src/mac/Karabiner-DriverKit-VirtualHIDDevice/include/pqrs/karabiner/driverkit:c_src/mac/Karabiner-DriverKit-VirtualHIDDevice/src/Client/vendor/include
   docker:
     cmds:
